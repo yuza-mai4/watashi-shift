@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#315c52">
+<meta name="description" content="勤務時間・給料・有給・シフトを管理する個人用アプリ">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>わたしのシフト</title>
+<style>
+:root{--green:#315c52;--mint:#e8f2ee;--cream:#fbfaf6;--ink:#24312d;--muted:#6b7772;--line:#dce4df;--orange:#a65a23;--red:#a83d3d}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+header{background:var(--green);color:white;padding:18px 16px 20px;border-radius:0 0 22px 22px} .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.install-btn{background:#fff;color:var(--green);font-size:12px;padding:9px 11px;white-space:nowrap}.install-btn[hidden]{display:none}
+header h1{font-size:22px;margin:0 0 5px}header p{margin:0;font-size:12px;opacity:.9}
+.top-tabs{position:sticky;top:0;z-index:50;background:var(--cream);padding:8px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;max-width:760px;margin:0 auto;box-shadow:0 2px 6px #2233220a}.top-tabs button{flex:1;white-space:nowrap;padding:9px 5px;font-size:12px;min-width:0}.top-tabs button.active{background:#fff;color:var(--green);outline:2px solid var(--green)}html{scroll-behavior:smooth;scroll-padding-top:70px}.panel[id]{scroll-margin-top:76px}
+main{padding:14px;max-width:760px;margin:auto}.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:13px;box-shadow:0 2px 7px #22332208}
+.panel h2{font-size:16px;margin:0 0 12px}.monthbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.monthbar button{width:40px;font-size:18px}
+button{border:0;border-radius:10px;padding:10px 12px;background:var(--green);color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:var(--mint);color:var(--green)}button.danger{background:#f8e9e7;color:var(--red)}button:active{opacity:.75}
+#calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.dow{text-align:center;color:var(--muted);font-size:11px;padding:4px 0}.day{min-height:57px;background:#fafcfb;border:1px solid var(--line);border-radius:9px;padding:5px 2px;text-align:center;color:var(--ink);font-size:13px}.day .date-num{display:block;font-weight:650;color:var(--ink)}.day.saturday .date-num{color:#2463c5}.day.sunday .date-num,.day.holiday .date-num{color:#c62828}.day small{display:block;font-size:10px;color:var(--green);margin-top:4px;overflow:hidden}.day.selected{outline:2px solid var(--green);background:var(--mint)}.day.batch-selected{outline:3px solid #d07a27;background:#fff0dc!important}.pattern-list{display:grid;gap:8px}.pattern{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid var(--line);border-radius:10px}.pattern.active{border:2px solid var(--green);background:var(--mint)}.pattern button{padding:6px 9px;font-size:12px}.day.empty{background:transparent;border-color:transparent}.day.has{background:#eff6f2}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.stat{background:var(--mint);border-radius:12px;padding:10px}.stat span{display:block;font-size:11px;color:var(--muted)}.stat strong{font-size:20px;display:block;margin-top:3px}.stat em{font-size:11px;font-style:normal}
+form{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:12px;color:var(--muted);display:block}input,select{width:100%;margin-top:5px;border:1px solid #ccd8d1;border-radius:9px;padding:10px;background:white;color:var(--ink);font:inherit;font-size:14px}label.wide,.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.note{font-size:12px;color:var(--muted);line-height:1.6}.alert{background:#fff4e5;border-radius:10px;padding:10px;font-size:12px;color:#774519;margin-top:10px}.good{background:#e8f5eb;color:#245d35}.bad{background:#fbe9e7;color:#8a2f2f}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.settings-group{border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0}.settings-group h3{font-size:14px;margin:0 0 10px;color:var(--green)}.settings-group:first-of-type{margin-top:0}.calc-value{background:var(--mint);border-radius:9px;padding:10px;margin-top:5px;font-size:14px;font-weight:700;color:var(--green)}.list{font-size:13px}.entry{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.entry:last-child{border-bottom:0}.entry button{padding:5px 8px;font-size:11px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:5px 20px 28px}
+@media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}.day{min-height:68px}}
+</style>
+</head>
+<body>
+<header><div class="header-row"><div><h1>わたしのシフト</h1><p>勤務時間・給料・有給・シフトをまとめて管理</p></div><button id="installApp" class="install-btn" type="button" hidden>ホーム画面に追加</button></div></header>
+<nav class="top-tabs" aria-label="ページ内メニュー"><button class="secondary" id="calendarTab" type="button">📅 カレンダー</button><button class="secondary" id="summaryTab" type="button">📊 月間集計</button><button class="secondary" id="shiftTab" type="button">✍️ 勤務登録</button><button class="secondary" id="settingsTab" type="button">⚙ 設定</button></nav>
+<main>
+<section class="panel" id="calendarPanel">
+<div class="monthbar"><button class="secondary" id="prev">‹</button><h2 id="monthTitle" style="margin:0"></h2><button class="secondary" id="next">›</button></div>
+<div id="calendar"></div>
+<p class="note">通常は日付をタップして編集。まとめて登録するときは、シフトパターンを選んでから入れたい日付を複数タップしてください。</p>
+</section>
+<section class="panel" id="patternsPanel"><h2>シフトパターン</h2>
+<p class="note">よく使う勤務時間を登録し、パターンを選んでカレンダーの日付を複数タップするとまとめて予定に入れられます。</p>
+<div id="patterns" class="pattern-list"></div>
+<form id="patternForm" style="margin-top:12px"><label>パターン名<input id="patternName" type="text" placeholder="例：早番"></label><label>休憩（分）<input id="patternBreak" type="number" min="0" step="5" value="0"></label><label>開始時刻<input id="patternStart" type="time" value="09:00" required></label><label>終了時刻<input id="patternEnd" type="time" value="15:00" required></label></form>
+<div class="actions"><button id="savePattern">パターンを登録</button><button class="secondary" id="cancelBatch">日付選択を終了</button></div>
+<p id="batchStatus" class="note">まずパターンを選択してください。</p></section>
+<section class="panel" id="summaryPanel"><h2 id="summaryTitle">今月のまとめ</h2><div class="stats">
+<div class="stat"><span>勤務時間（実働のみ）</span><strong id="actualHours">0時間</strong></div><div class="stat"><span>勤務時間（有給込み）</span><strong id="hours">0時間</strong></div><div class="stat"><span>勤務日数</span><strong id="workDays">0日</strong></div>
+<div class="stat"><span>今月の給与見込み（交通費別）</span><strong id="pay">¥0</strong></div><div class="stat"><span>交通費の合計</span><strong id="commuteTotal">¥0</strong></div>
+<div class="stat"><span>有給取得日数</span><strong id="paidDays">0日</strong></div>
+</div><div id="weekAlert" class="alert"></div>
+<div class="panel" style="margin-top:12px;margin-bottom:0;background:#fbfdfc"><h3 style="font-size:14px;margin:0 0 8px">期間を指定した総支給額</h3><div class="settings"><label>開始月<input id="periodStart" type="month"></label><label>終了月<input id="periodEnd" type="month"></label></div><div class="actions"><button id="calcPeriod">期間合計を計算</button></div><div id="periodResult" class="alert good">集計する期間を選んでください。</div><p class="note">総支給額＝基本給＋割増賃金＋登録済み交通費。有給の支給額も含みます。</p></div><p class="note">※週20時間は登録した勤務時間を暦週（月〜日）で集計した目安です。社会保険の正式判定は契約内容・勤務実態なども関係するため、この表示だけで加入要否は決まりません。</p></section>
+<section class="panel" id="shiftPanel"><h2 id="formTitle">勤務を登録・編集</h2>
+<form id="shiftForm">
+<label>日付<input id="date" type="date" required></label>
+<label>区分<select id="type"><option value="work">勤務</option><option value="paid">有給休暇</option><option value="off">休み</option></select></label>
+<label>開始時刻<input id="start" type="time" value="09:00"></label>
+<label>終了時刻<input id="end" type="time" value="15:00"></label>
+<label>休憩（分）<input id="break" type="number" min="0" step="5" value="0"></label>
+<label>有給の支給額（円）<input id="paidAmount" type="number" min="0" step="1" placeholder="空欄なら通常1日分"></label>
+<label>時間外の時間（時間）<input id="overtimeHours" type="number" min="0" step="0.25" value="0"></label><label>深夜の時間（22〜5時）<input id="nightHours" type="number" min="0" step="0.25" value="0"></label><label>休日割増の時間（時間）<input id="holidayHours" type="number" min="0" step="0.25" value="0"></label>
+<label class="wide">メモ<input id="memo" type="text" placeholder="例：早番、通院など"></label>
+</form>
+<div class="actions"><button id="save">この日の内容を保存</button><button class="secondary" id="clear">入力をクリア</button><button class="danger" id="delete" style="display:none">この日を削除</button></div>
+<p class="note">有給は設定した「1日あたりの有給時間」と支給額で計算します。勤務の開始・終了・休憩を入力してください。</p>
+</section>
+<section class="panel" id="settingsPanel"><h2>⚙ 設定</h2><p class="note" style="margin:-4px 0 12px">項目ごとにまとめました。変更したら、最後に「設定を保存」を押してください。</p>
+<div class="settings-group"><h3>💴 時給・通勤手当</h3><div class="settings">
+<label>現在の時給（円）<input id="wage" type="number" min="0" value="1130"></label>
+<label>1日あたりの有給時間<input id="paidHours" type="number" min="0" step="0.25" value="6"></label>
+<label>交通費単価（円／km）<input id="commuteRate" type="number" min="0" step="1" value="20"></label>
+<label>片道距離（km）<input id="commuteDistance" type="number" min="0" step="0.1" value="5.1"></label>
+<div class="wide"><label>交通費（往復・1勤務日あたり）</label><div class="calc-value" id="commutePreview">¥204（20円 × 5.1km × 往復）</div><p class="note">片道5.1km、往復10.2kmとして計算します。勤務日の交通費として月間集計に加算します。</p></div>
+<label>年間収入の目安（円）<input id="annualLimit" type="number" min="0" value="1230000"></label></div></div>
+<div class="settings-group"><h3>🗓 給与の支払い</h3><div class="settings">
+<label>給料の締め日<select id="closingDay"><option value="末日">月末</option><option value="5">毎月5日</option><option value="10">毎月10日</option><option value="15">毎月15日</option><option value="20">毎月20日</option><option value="25">毎月25日</option></select></label>
+<label>給料の支払時期<select id="payMonthOffset"><option value="0">当月払い</option><option value="1" selected>翌月払い</option><option value="2">翌々月払い</option><option value="3">3か月後払い</option></select></label><label>給料の支払日（毎月）<input id="payDay" type="number" min="1" max="31" value="25"></label>
+<label>給料計算の単位<select id="roundMinutes"><option value="1">1分単位</option><option value="5">5分単位</option><option value="10">10分単位</option><option value="15">15分単位</option><option value="30">30分単位</option><option value="60">1時間単位</option></select></label><label>端数処理<select id="roundMode"><option value="floor">切り捨て</option><option value="nearest">四捨五入</option><option value="ceil">切り上げ</option></select></label></div><p class="note">給与の端数処理は、実際の勤務先の給与規定に合わせて設定してください。</p></div>
+<div class="settings-group"><h3>➕ 割増賃金</h3><div class="settings"><label>時間外割増（％）<input id="overtimeRate" type="number" min="0" value="25"></label><label>深夜割増（％）<input id="nightRate" type="number" min="0" value="25"></label><label>休日割増（％）<input id="holidayRate" type="number" min="0" value="35"></label></div></div>
+<div class="actions"><button id="saveSettings">設定を保存</button></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="settings-group"><h3>📈 時給の履歴</h3><p class="note">時給が変わったら、適用開始日と新しい時給を登録してください。勤務日の時給で給与を計算します。</p><div class="settings"><label>適用開始日<input id="wageStartDate" type="date"></label><label>新しい時給（円）<input id="wageNewAmount" type="number" min="0" step="1" placeholder="例：1130"></label></div><div class="actions"><button id="addWageHistory">時給を追加</button></div><div id="wageHistoryList" class="list"></div><p class="note">登録済みの過去の勤務も、適用開始日に基づいて計算されます。</p></div>
+<p class="note">※交通費の計算は設定値に基づく目安です。年間収入の目安は家族手当などの社内基準に合わせて設定してください。</p></section>
+<section class="panel" id="entriesPanel"><h2>登録した予定</h2><div id="entries" class="list"></div></section>
+<section class="panel" id="backupPanel"><h2>💾 データのバックアップ・復元</h2>
+<p>勤務予定・シフトパターン・時給履歴・各種設定を、バックアップファイルとして保存できます。</p>
+<div class="actions"><button id="export">バックアップを保存</button><label style="display:inline-flex;align-items:center;gap:6px;background:var(--mint);padding:9px 12px;border-radius:10px;color:var(--green);cursor:pointer">バックアップから復元<input id="importFile" type="file" accept=".json,application/json" style="display:none"></label></div>
+<p class="note">復元すると、現在このブラウザに保存されているデータはバックアップの内容に置き換わります。復元前に、必要なら現在のデータもバックアップしてください。</p>
+<p class="note">バックアップファイルはスマートフォンの「ダウンロード」などに保存されます。機種変更時はファイルを新しい端末に移し、この画面から読み込んでください。ファイルは個人情報を含むため、安全な場所に保管してください。</p>
+<div id="backupStatus" class="alert good" role="status">最後にバックアップを保存した日時は、ファイル名で確認できます。</div>
+</section>
+</main><footer>試作品 v15 · 給与計算は設定・入力内容に基づく目安です</footer>
+<script>
+const $=id=>document.getElementById(id);
+// PWA: HTTPSで公開された場合にオフライン用キャッシュを有効化
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+let installPromptEvent=null;
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPromptEvent=event;$('installApp').hidden=false;});
+$('installApp').addEventListener('click',async()=>{if(installPromptEvent){installPromptEvent.prompt();await installPromptEvent.userChoice;installPromptEvent=null;$('installApp').hidden=true;}else{alert('Chromeのメニュー（︙）から「ホーム画面に追加」または「アプリをインストール」を選んでください。表示されない場合は、HTTPSで公開されたページをChromeで開いているか確認してください。');}});
+window.addEventListener('appinstalled',()=>{$('installApp').hidden=true;});
+const today=new Date(); let viewYear=today.getFullYear(),viewMonth=today.getMonth(),selected='';
+const KEY='watashiShiftDemoV1';
+let state={entries:{},patterns:[],wageHistory:[{date:'1900-01-01',wage:1100},{date:'2026-10-01',wage:1130}],settings:{wage:1130,commute:204,commuteRate:20,commuteDistance:5.1,paidHours:6,annualLimit:1230000,closingDay:'末日',payMonthOffset:1,payDay:25,roundMinutes:1,roundMode:'floor',overtimeRate:25,nightRate:25,holidayRate:35}};
+try{const saved=localStorage.getItem(KEY);if(saved){const parsed=JSON.parse(saved);state={...state,...parsed,patterns:parsed.patterns||[],wageHistory:parsed.wageHistory||[{date:'1900-01-01',wage:1100},{date:'2026-10-01',wage:1130}],settings:{...state.settings,...parsed.settings}}}}catch(e){}
+let activePattern=null,batchDates=new Set(),editingPatternId=null;
+const pad=n=>String(n).padStart(2,'0'), keyDate=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+const yen=n=>'¥'+Math.round(n||0).toLocaleString('ja-JP');
+function saveState(){localStorage.setItem(KEY,JSON.stringify(state));}
+function rawMinutesFor(e){if(!e||e.type!=='work')return 0;let a=e.start.split(':').map(Number),b=e.end.split(':').map(Number);let mins=b[0]*60+b[1]-(a[0]*60+a[1]);if(mins<0)mins+=1440;return Math.max(0,mins-(+e.break||0))}
+function roundedMinutes(e){let mins=rawMinutesFor(e),unit=Math.max(1,+state.settings.roundMinutes||1),mode=state.settings.roundMode||'floor';return (mode==='ceil'?Math.ceil(mins/unit):mode==='nearest'?Math.round(mins/unit):Math.floor(mins/unit))*unit}
+function hoursFor(e){return roundedMinutes(e)/60}
+function paidHoursFor(e){return e&&e.type==='paid'?(+state.settings.paidHours||0):0}
+function wageForDate(k){const list=(state.wageHistory||[]).filter(x=>x.date<=k).sort((a,b)=>a.date.localeCompare(b.date));return list.length?+list[list.length-1].wage:(+state.settings.wage||0)}
+function paidAmount(e,k){if(!e||e.type!=='paid')return 0;return e.paidAmount!==''&&e.paidAmount!=null?+e.paidAmount:wageForDate(k)*(+state.settings.paidHours||0)}
+function entryPay(e,k){if(!e)return 0;if(e.type==='work'){const w=wageForDate(k),base=hoursFor(e)*w;return base+(+e.overtimeHours||0)*w*(+state.settings.overtimeRate||0)/100+(+e.nightHours||0)*w*(+state.settings.nightRate||0)/100+(+e.holidayHours||0)*w*(+state.settings.holidayRate||0)/100}if(e.type==='paid')return paidAmount(e,k);return 0}
+function basePay(e,k){if(!e)return 0;if(e.type==='work')return hoursFor(e)*wageForDate(k);if(e.type==='paid')return paidAmount(e,k);return 0}
+function premiumPay(e,k){return Math.max(0,entryPay(e,k)-basePay(e,k))}
+function commuteFor(e){return e&&e.type==='work'?(+state.settings.commute||((+state.settings.commuteRate||20)*(+state.settings.commuteDistance||5.1)*2)):0}
+function updateCommutePreview(){const rate=Math.max(0,+$('commuteRate').value||0),distance=Math.max(0,+$('commuteDistance').value||0),amount=Math.round(rate*distance*2);$('commutePreview').textContent=`¥${amount.toLocaleString('ja-JP')}（${rate}円 × 片道${distance}km × 往復）`;}
+function formatHours(hours){const totalMinutes=Math.round((Number(hours)||0)*60);const h=Math.floor(totalMinutes/60),m=totalMinutes%60;return m?`${h}時間${m}分`:`${h}時間`}
+function dateObj(s){let [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function nthMonday(y,m,n){const first=new Date(y,m-1,1);return 1+((8-first.getDay())%7)+(n-1)*7}
+function equinoxDay(y, spring){return spring?Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4)):Math.floor(23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4))}
+function japaneseHolidays(y){
+ const h=new Map(),add=(m,d,name)=>h.set(keyDate(y,m-1,d),name);
+ add(1,1,'元日');add(2,11,'建国記念の日');add(2,23,'天皇誕生日');add(4,29,'昭和の日');add(5,3,'憲法記念日');add(5,4,'みどりの日');add(5,5,'こどもの日');add(8,11,'山の日');add(11,3,'文化の日');add(11,23,'勤労感謝の日');
+ add(1,nthMonday(y,1,2),'成人の日');add(7,nthMonday(y,7,3),'海の日');add(9,nthMonday(y,9,3),'敬老の日');add(10,nthMonday(y,10,2),'スポーツの日');
+ add(3,equinoxDay(y,true),'春分の日');add(9,equinoxDay(y,false),'秋分の日');
+ if(y===2020){h.delete(keyDate(y,6,20));add(7,23,'海の日');add(7,24,'スポーツの日');h.delete(keyDate(y,9,12));add(8,10,'山の日')}
+ if(y===2021){h.delete(keyDate(y,6,19));add(7,22,'海の日');add(7,23,'スポーツの日');h.delete(keyDate(y,7,11));add(8,8,'山の日')}
+ if(y===2019){h.delete(keyDate(y,1,23));add(5,1,'天皇の即位の日');add(10,22,'即位礼正殿の儀')}
+ // 国民の休日（祝日に挟まれた平日）
+ for(let d=2;d<=365;d++){const dt=new Date(y,0,d),k=keyDate(y,dt.getMonth(),dt.getDate()),prevDate=new Date(y,0,d-1),nextDate=new Date(y,0,d+1),prev=keyDate(y,prevDate.getFullYear(),prevDate.getMonth(),prevDate.getDate()),next=keyDate(y,nextDate.getFullYear(),nextDate.getMonth(),nextDate.getDate());if(!h.has(k)&&h.has(prev)&&h.has(next))h.set(k,'国民の休日')}
+ // 振替休日：日曜の祝日を、次の祝日でない日に振り替え
+ const originals=[...h.entries()];
+ for(const [k,n] of originals){const dt=dateObj(k);if(dt.getDay()===0){let d=new Date(dt);do{d.setDate(d.getDate()+1)}while(h.has(keyDate(d.getFullYear(),d.getMonth(),d.getDate())));h.set(keyDate(d.getFullYear(),d.getMonth(),d.getDate()),'振替休日')}}
+ return h;
+}
+function holidayName(date){const y=date.getFullYear();return japaneseHolidays(y).get(keyDate(y,date.getMonth(),date.getDate()))||''}
+function renderCalendar(){
+ $('monthTitle').textContent=`${viewYear}年${viewMonth+1}月`;
+ const cal=$('calendar');cal.innerHTML='';['日','月','火','水','木','金','土'].forEach((x,i)=>{let el=document.createElement('div');el.className='dow'+(i===0?' sunday':'')+(i===6?' saturday':'');el.textContent=x;cal.appendChild(el)});
+ let first=new Date(viewYear,viewMonth,1).getDay(),last=new Date(viewYear,viewMonth+1,0).getDate();
+ for(let i=0;i<first;i++){let e=document.createElement('div');e.className='day empty';cal.appendChild(e)}
+ for(let d=1;d<=last;d++){let k=keyDate(viewYear,viewMonth,d),e=state.entries[k],dt=new Date(viewYear,viewMonth,d),dow=dt.getDay(),holiday=holidayName(dt),el=document.createElement('button');el.className='day'+(dow===6?' saturday':'')+(dow===0?' sunday':'')+(holiday?' holiday':'')+(k===selected?' selected':'')+(batchDates.has(k)?' batch-selected':'')+(e?' has':'');el.style.background=k===selected?'var(--mint)':e?'#eff6f2':'#fafcfb';el.title=holiday||'';el.innerHTML=`<span class="date-num">${d}</span><small>${e?(e.type==='work'?formatHours(hoursFor(e)):e.type==='paid'?'有給':'休み'):(holiday?holiday:'')}</small>`;el.onclick=()=>{if(activePattern){if(batchDates.has(k))batchDates.delete(k);else batchDates.add(k);renderCalendar();$('batchStatus').textContent=`選択中：${batchDates.size}日。選び終えたら下の「選択日へ一括登録」を押してください。`;return}selected=k;loadForm(k);renderAll();$('shiftForm').closest('.panel').scrollIntoView({behavior:'smooth',block:'start'})};cal.appendChild(el)}
+}
+function monthEntries(y,m){return Object.entries(state.entries).filter(([k])=>{let d=dateObj(k);return d.getFullYear()===y&&d.getMonth()===m})}
+function renderSummary(){
+ const m=monthEntries(viewYear,viewMonth),yr=Object.entries(state.entries).filter(([k])=>dateObj(k).getFullYear()===viewYear);
+ const actualH=m.reduce((s,[k,e])=>s+(e.type==='work'?hoursFor(e):0),0),workH=m.reduce((s,[k,e])=>s+(e.type==='work'?hoursFor(e):0)+paidHoursFor(e),0),workDays=m.filter(([k,e])=>e.type==='work'||e.type==='paid').length,commute=m.reduce((s,[k,e])=>s+commuteFor(e),0),pay=m.reduce((s,[k,e])=>s+entryPay(e,k),0),pd=m.filter(([k,e])=>e.type==='paid').length;
+ $('summaryTitle').textContent=`${viewYear}年${viewMonth+1}月のまとめ`;$('actualHours').textContent=formatHours(actualH);$('hours').textContent=formatHours(workH);$('workDays').textContent=workDays+'日';$('pay').textContent=yen(pay);$('commuteTotal').textContent=yen(commute);$('paidDays').textContent=pd+'日';
+ let weekMap={};for(const [k,e] of Object.entries(state.entries)){let d=dateObj(k),dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow);let wk=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;weekMap[wk]=(weekMap[wk]||0)+hoursFor(e)+paidHoursFor(e)}
+ let weeks=Object.entries(weekMap).filter(([wk,h])=>{let d=dateObj(wk);return d.getFullYear()===viewYear&&d.getMonth()===viewMonth});
+ let over=weeks.filter(([wk,h])=>h>=20);
+ let msg=weeks.length?`この月に登録された週のうち、20時間以上：${over.length}週。`:'勤務を登録すると週ごとの時間を確認できます。';
+ $('weekAlert').className='alert '+(over.length?'bad':'good');$('weekAlert').textContent=msg;
+}
+function renderEntries(){let arr=Object.entries(state.entries).filter(([k])=>{let d=dateObj(k);return d.getFullYear()===viewYear&&d.getMonth()===viewMonth}).sort((a,b)=>a[0].localeCompare(b[0]));let box=$('entries');box.innerHTML='';if(!arr.length){box.textContent='この月はまだ登録がありません。';return}arr.forEach(([k,e])=>{let div=document.createElement('div');div.className='entry';let desc=e.type==='work'?`${e.start}〜${e.end}（休憩${e.break||0}分）・${formatHours(hoursFor(e))}`:e.type==='paid'?`有給・${formatHours(+state.settings.paidHours||0)}`:'休み';div.innerHTML=`<div><strong>${k}</strong><div>${desc}${e.memo?' · '+escapeHtml(e.memo):''}</div></div><div style="text-align:right;white-space:nowrap">${yen(entryPay(e,k)+commuteFor(e))}<br><small>基本${yen(basePay(e,k))}・割増${yen(premiumPay(e,k))}</small><br><button class="secondary" data-date="${k}">編集</button></div>`;box.appendChild(div);div.querySelector('button').onclick=()=>{selected=k;loadForm(k);renderAll();window.scrollTo({top:0,behavior:'smooth'})}})}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function loadForm(k){$('date').value=k;let e=state.entries[k];$('formTitle').textContent=e?k+' の登録内容を変更':' '+k+' の勤務を登録';$('type').value=e?.type||'work';$('start').value=e?.start||'09:00';$('end').value=e?.end||'15:00';$('break').value=e?.break??0;$('paidAmount').value=e?.paidAmount??'';$('overtimeHours').value=e?.overtimeHours??0;$('nightHours').value=e?.nightHours??0;$('holidayHours').value=e?.holidayHours??0;$('memo').value=e?.memo||'';$('delete').style.display=e?'inline-block':'none';$('save').textContent=e?'変更を保存':'この日の内容を保存'}
+function clearForm(){selected='';$('date').value=keyDate(viewYear,viewMonth,today.getDate()<=new Date(viewYear,viewMonth+1,0).getDate()?today.getDate():1);$('type').value='work';$('start').value='09:00';$('end').value='15:00';$('break').value=0;$('paidAmount').value='';$('overtimeHours').value=0;$('nightHours').value=0;$('holidayHours').value=0;$('memo').value='';$('delete').style.display='none';$('formTitle').textContent='勤務を登録';$('save').textContent='この日の内容を保存';renderCalendar()}
+function renderPatterns(){const box=$('patterns');box.innerHTML='';if(!state.patterns.length){box.textContent='まだパターンがありません。下のフォームから登録してください。'}state.patterns.forEach(p=>{const div=document.createElement('div');div.className='pattern'+(activePattern===p.id?' active':'');div.innerHTML=`<div><strong>${escapeHtml(p.name)}</strong><div class="note">${p.start}〜${p.end}（休憩${p.break||0}分）</div></div><div class="actions" style="margin:0"><button class="${activePattern===p.id?'':'secondary'}" data-use="${p.id}">${activePattern===p.id?'選択中':'このパターンで日付選択'}</button><button class="secondary" data-edit="${p.id}">編集</button><button class="danger" data-del="${p.id}">削除</button></div>`;box.appendChild(div);div.querySelector('[data-use]').onclick=()=>{activePattern=activePattern===p.id?null:p.id;batchDates.clear();renderPatterns();renderCalendar();$('batchStatus').textContent=activePattern?`「${p.name}」を選択中。カレンダーの日付を複数タップしてください。`:'パターン選択を解除しました。'};div.querySelector('[data-edit]').onclick=()=>{editingPatternId=p.id;$('patternName').value=p.name;$('patternStart').value=p.start;$('patternEnd').value=p.end;$('patternBreak').value=p.break||0;$('savePattern').textContent='パターンを更新'};div.querySelector('[data-del]').onclick=()=>{if(confirm(`「${p.name}」を削除しますか？（登録済みの予定は削除されません）`)){state.patterns=state.patterns.filter(x=>x.id!==p.id);if(activePattern===p.id)activePattern=null;saveState();renderPatterns();renderCalendar()}}})}
+function renderAll(){renderCalendar();renderSummary();renderEntries();renderPatterns()}
+const tabTargets={calendarTab:'calendarPanel',summaryTab:'summaryPanel',shiftTab:'shiftPanel',settingsTab:'settingsPanel'};Object.entries(tabTargets).forEach(([tabId,targetId])=>{$(tabId).onclick=()=>{$(targetId).scrollIntoView({behavior:'smooth',block:'start'});Object.keys(tabTargets).forEach(id=>$(id).classList.toggle('active',id===tabId));}});
+$('prev').onclick=()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--}selected='';batchDates.clear();renderAll()};
+$('next').onclick=()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++}selected='';batchDates.clear();renderAll()};
+$('date').onchange=()=>{if($('date').value){selected=$('date').value;let d=dateObj(selected);viewYear=d.getFullYear();viewMonth=d.getMonth();loadForm(selected);renderAll()}};
+$('type').onchange=()=>{let paid=$('type').value==='paid';$('start').disabled=paid;$('end').disabled=paid;$('break').disabled=paid};
+$('save').onclick=()=>{let k=$('date').value;if(!k){alert('日付を選んでください');return}let type=$('type').value;state.entries[k]={type,start:$('start').value||'09:00',end:$('end').value||'15:00',break:+$('break').value||0,paidAmount:$('paidAmount').value,overtimeHours:Math.max(0,+$('overtimeHours').value||0),nightHours:Math.max(0,+$('nightHours').value||0),holidayHours:Math.max(0,+$('holidayHours').value||0),memo:$('memo').value.trim()};selected=k;let d=dateObj(k);viewYear=d.getFullYear();viewMonth=d.getMonth();saveState();renderAll();$('delete').style.display='inline-block';alert('保存しました')};
+$('delete').onclick=()=>{let k=$('date').value;if(k&&state.entries[k]&&confirm(k+' の登録を削除しますか？')){delete state.entries[k];saveState();clearForm();renderAll()}};
+$('clear').onclick=clearForm;
+$('savePattern').onclick=()=>{const name=$('patternName').value.trim(),start=$('patternStart').value,end=$('patternEnd').value;if(!name||!start||!end){alert('パターン名・開始時刻・終了時刻を入力してください');return}const p={id:editingPatternId||('p'+Date.now()),name,start,end,break:Math.max(0,+$('patternBreak').value||0)};if(editingPatternId){state.patterns=state.patterns.map(x=>x.id===editingPatternId?p:x)}else state.patterns.push(p);editingPatternId=null;$('patternName').value='';$('patternStart').value='09:00';$('patternEnd').value='15:00';$('patternBreak').value=0;$('savePattern').textContent='パターンを登録';saveState();renderPatterns();alert('シフトパターンを保存しました')};
+$('cancelBatch').onclick=()=>{activePattern=null;batchDates.clear();renderPatterns();renderCalendar();$('batchStatus').textContent='日付選択を終了しました。'};
+const applyBtn=document.createElement('button');applyBtn.id='applyPattern';applyBtn.textContent='選択日へ一括登録';applyBtn.style.marginTop='8px';$('cancelBatch').parentNode.appendChild(applyBtn);applyBtn.onclick=()=>{const p=state.patterns.find(x=>x.id===activePattern);if(!p){alert('先にシフトパターンを選んでください');return}if(!batchDates.size){alert('カレンダーで日付を複数選んでください');return}const dates=[...batchDates];if(!confirm(`${dates.length}日分に「${p.name}」を登録します。既存の予定がある日は上書きします。よろしいですか？`))return;dates.forEach(k=>{state.entries[k]={type:'work',start:p.start,end:p.end,break:p.break,paidAmount:'',memo:p.name}});saveState();batchDates.clear();activePattern=null;renderAll();$('batchStatus').textContent=`${dates.length}日分を登録しました。`};
+function renderWageHistory(){const box=$('wageHistoryList');box.innerHTML='';const arr=[...(state.wageHistory||[])].sort((a,b)=>b.date.localeCompare(a.date));if(!arr.length){box.textContent='時給履歴がありません。';return}arr.forEach(item=>{const div=document.createElement('div');div.className='entry';div.innerHTML=`<div><strong>${item.date}から</strong><div>${yen(item.wage)}／時間</div></div><button class="danger" data-wage-date="${item.date}">削除</button>`;box.appendChild(div);div.querySelector('button').onclick=()=>{if((state.wageHistory||[]).length<=1){alert('時給履歴は最低1件必要です');return}if(confirm(`${item.date}からの時給履歴を削除しますか？`)){state.wageHistory=state.wageHistory.filter(x=>x.date!==item.date);saveState();renderWageHistory();renderAll()}}})}
+function loadSettings(){for(let k of ['wage','commuteRate','commuteDistance','paidHours','annualLimit','closingDay','payMonthOffset','payDay','roundMinutes','roundMode','overtimeRate','nightRate','holidayRate'])$(k).value=state.settings[k]??({closingDay:'末日',payMonthOffset:1,payDay:25,roundMinutes:1,roundMode:'floor',overtimeRate:25,nightRate:25,holidayRate:35}[k]);$('wageStartDate').value=`${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;$('wageNewAmount').value=state.settings.wage;updateCommutePreview();renderWageHistory()}
+$('commuteRate').addEventListener('input',updateCommutePreview);$('commuteDistance').addEventListener('input',updateCommutePreview);
+$('saveSettings').onclick=()=>{for(let k of ['wage','paidHours','annualLimit','payMonthOffset','payDay','roundMinutes','overtimeRate','nightRate','holidayRate'])state.settings[k]=Math.max(0,+$(k).value||0);state.settings.commuteRate=Math.max(0,+$('commuteRate').value||0);state.settings.commuteDistance=Math.max(0,+$('commuteDistance').value||0);state.settings.commute=Math.round(state.settings.commuteRate*state.settings.commuteDistance*2);state.settings.closingDay=$('closingDay').value;state.settings.roundMode=$('roundMode').value;saveState();renderAll();alert('設定を保存しました')};
+$('addWageHistory').onclick=()=>{const date=$('wageStartDate').value,wage=$('wageNewAmount').value;if(!date||wage===''){alert('適用開始日と時給を入力してください');return}const n=Number(wage);if(!Number.isFinite(n)||n<0){alert('時給を正しく入力してください');return}state.wageHistory=state.wageHistory||[];const existing=state.wageHistory.find(x=>x.date===date);if(existing){if(!confirm(`${date}の時給を${yen(existing.wage)}から${yen(n)}に変更しますか？`))return;existing.wage=n}else state.wageHistory.push({date,wage:n});state.wageHistory.sort((a,b)=>a.date.localeCompare(b.date));state.settings.wage=n;saveState();loadSettings();renderAll();alert('時給履歴を保存しました')};
+$('calcPeriod').onclick=()=>{const a=$('periodStart').value,b=$('periodEnd').value;if(!a||!b||a>b){$('periodResult').className='alert bad';$('periodResult').textContent='開始月と終了月を正しく選んでください。';return}const [sy,sm]=a.split('-').map(Number),[ey,em]=b.split('-').map(Number);let base=0,premium=0,commute=0,paid=0,days=0;for(const [k,e] of Object.entries(state.entries)){const d=dateObj(k),ym=d.getFullYear()*12+d.getMonth(),from=sy*12+sm-1,to=ey*12+em-1;if(ym>=from&&ym<=to){base+=basePay(e,k);premium+=premiumPay(e,k);commute+=commuteFor(e);if(e.type==='paid')paid+=paidAmount(e,k);if(e.type==='work'||e.type==='paid')days++}}const total=base+premium+commute;$('periodResult').className='alert good';$('periodResult').innerHTML=`<strong>${a.replace('-','年')}月〜${b.replace('-','年')}月の総支給額：${yen(total)}</strong><br>基本給・有給：${yen(base)}（うち有給 ${yen(paid)})<br>割増賃金：${yen(premium)}<br>交通費：${yen(commute)}<br>勤務・有給日数：${days}日`;};
+function makeBackupPayload(){return {format:'watashi-shift-backup',formatVersion:1,appVersion:16,exportedAt:new Date().toISOString(),data:state};}
+$('export').onclick=()=>{
+  try{
+    const payload=makeBackupPayload(),blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a'),stamp=new Date();
+    a.href=url;a.download=`わたしのシフト_backup_${stamp.getFullYear()}${pad(stamp.getMonth()+1)}${pad(stamp.getDate())}_${pad(stamp.getHours())}${pad(stamp.getMinutes())}.json`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('backupStatus').className='alert good';$('backupStatus').textContent=`バックアップを作成しました：${a.download}。ファイルが保存されたことを確認してください。`;
+  }catch(e){alert('バックアップを作成できませんでした。端末の空き容量やブラウザの設定を確認してください。')}
+};
+function validateBackupData(d){
+  if(!d||typeof d!=='object'||Array.isArray(d))throw Error('形式が違います');
+  if(!d.entries||typeof d.entries!=='object'||Array.isArray(d.entries))throw Error('勤務データがありません');
+  if(!d.settings||typeof d.settings!=='object'||Array.isArray(d.settings))throw Error('設定データがありません');
+  for(const [date,e] of Object.entries(d.entries)){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!e||typeof e!=='object'||!['work','paid','off'].includes(e.type))throw Error('勤務データを確認できません');
+    if(e.type==='work'&&(!/^\d{2}:\d{2}$/.test(e.start||'')||!/^\d{2}:\d{2}$/.test(e.end||'')))throw Error('勤務時刻を確認できません');
+  }
+  if(d.patterns!==undefined&&!Array.isArray(d.patterns))throw Error('シフトパターンを確認できません');
+  if(d.wageHistory!==undefined&&!Array.isArray(d.wageHistory))throw Error('時給履歴を確認できません');
+  return {...d,patterns:Array.isArray(d.patterns)?d.patterns:[],wageHistory:Array.isArray(d.wageHistory)&&d.wageHistory.length?d.wageHistory:[{date:'1900-01-01',wage:Number(d.settings.wage)||0}],settings:{...state.settings,...d.settings}};
+}
+$('importFile').onchange=async ev=>{
+  const input=ev.target,f=input.files&&input.files[0];if(!f)return;
+  try{
+    if(f.size>5*1024*1024)throw Error('ファイルが大きすぎます（5MBまで）');
+    const parsed=JSON.parse(await f.text());let candidate;
+    if(parsed.format==='watashi-shift-backup'){if(parsed.formatVersion!==1)throw Error('対応していないバックアップ形式です');candidate=parsed.data;}
+    else candidate=parsed; // v14以前のJSONにも対応
+    const restored=validateBackupData(candidate);
+    const dateLabel=parsed.exportedAt?`\n作成日時：${new Date(parsed.exportedAt).toLocaleString('ja-JP')}`:'';
+    if(!confirm(`バックアップを復元しますか？\n現在のデータは読み込む内容に置き換わります。${dateLabel}\n復元前に現在のデータをバックアップすることをおすすめします。`))return;
+    localStorage.setItem(KEY,JSON.stringify(restored));state=restored;loadSettings();renderAll();
+    $('backupStatus').className='alert good';$('backupStatus').textContent=`復元しました：${Object.keys(state.entries).length}日分の登録、${state.patterns.length}件のシフトパターン。`;
+    alert('バックアップを復元しました。登録内容と設定を確認してください。');
+  }catch(e){
+    $('backupStatus').className='alert bad';$('backupStatus').textContent=`復元できませんでした：${e.message||'ファイルの形式を確認してください'}。現在のデータは変更していません。`;
+    alert(`復元できませんでした。\n${e.message||'バックアップファイルを確認してください'}\n現在のデータは変更していません。`);
+  }finally{input.value=''}
+};
+state.settings={closingDay:'末日',payMonthOffset:1,payDay:25,roundMinutes:1,roundMode:'floor',overtimeRate:25,nightRate:25,holidayRate:35,...state.settings};if(!$('periodStart').value){$('periodStart').value=`${viewYear}-${pad(viewMonth+1)}`;$('periodEnd').value=`${viewYear}-${pad(viewMonth+1)}`}
+if(!state.wageHistory||!state.wageHistory.length){state.wageHistory=[{date:'1900-01-01',wage:1100},{date:'2026-10-01',wage:1130}];saveState()}loadSettings();selected=keyDate(viewYear,viewMonth,Math.min(today.getDate(),new Date(viewYear,viewMonth+1,0).getDate()));loadForm(selected);renderAll();$('type').dispatchEvent(new Event('change'));
+</script>
+</body></html>
